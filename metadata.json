@@ -1,0 +1,5 @@
+{
+  "name": "WinClean 脚本生成器",
+  "description": "专业的 Windows C 盘清理脚本生成工具。支持自定义生成、AI 安全分析及一键下载。",
+  "requestFramePermissions": []
+}
