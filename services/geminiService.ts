@@ -1,11 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
+// Safely access process.env to avoid ReferenceError in browser environments
+const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) || '';
 const ai = new GoogleGenAI({ apiKey });
 
 export const analyzeScript = async (scriptContent: string): Promise<string> => {
   if (!apiKey) {
-    throw new Error("API Key is missing.");
+    // Return a graceful error message instead of throwing immediately if key is missing in UI
+    console.warn("API Key is missing in environment variables.");
+    throw new Error("API Key 未配置。请在部署设置中添加 API_KEY 环境变量。");
   }
 
   try {
