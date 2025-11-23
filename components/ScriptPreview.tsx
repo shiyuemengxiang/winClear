@@ -17,7 +17,8 @@ const ScriptPreview: React.FC<ScriptPreviewProps> = ({ script, onAnalyze, analys
   };
 
   const handleDownload = () => {
-    const blob = new Blob([script], { type: 'text/plain;charset=utf-8' });
+    // Add BOM (\uFEFF) to ensure Windows recognizes the file as UTF-8
+    const blob = new Blob(['\uFEFF' + script], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -30,14 +31,15 @@ const ScriptPreview: React.FC<ScriptPreviewProps> = ({ script, onAnalyze, analys
 
   // Simple syntax highlighting simulation
   const highlightSyntax = (code: string) => {
-    return code.split('\n').map((line, i) => {
+    // Split by regex to handle both \n and \r\n
+    return code.split(/\r?\n/).map((line, i) => {
       // Comments
       if (line.trim().startsWith('::') || line.trim().startsWith('REM')) {
         return <div key={i} className="text-slate-500">{line}</div>;
       }
       // Echo commands
       if (line.trim().toLowerCase().startsWith('echo')) {
-        const parts = line.split(/(echo)/i);
+        // Simple visual fix for lines that are just commands
         return (
           <div key={i}>
             <span className="text-purple-400">echo</span>

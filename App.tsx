@@ -19,32 +19,41 @@ function App() {
 
   const generateScript = useMemo(() => {
     const timestamp = new Date().toISOString().split('T')[0];
-    let script = `@echo off\n:: Windows C 盘清理脚本生成于 ${timestamp}\n:: 请以管理员身份运行以获得最佳效果\n\n`;
+    // CRITICAL: Use CRLF (\r\n) for Windows Batch files. 
+    // \n alone can cause command parsing errors on some Windows versions.
+    const CRLF = '\r\n';
     
-    // Set code page to UTF-8 to support Chinese characters in newer cmd
-    script += `chcp 65001 >nul\n`;
-    script += `color 0A\n`;
-    script += `echo ==================================================\n`;
-    script += `echo           开始系统清理流程\n`;
-    script += `echo ==================================================\n\n`;
+    let script = `@echo off${CRLF}`;
+    // Switch to UTF-8 page code immediately to handle Chinese characters correctly
+    script += `chcp 65001 >nul${CRLF}`;
+    script += `:: Windows C 盘清理脚本生成于 ${timestamp}${CRLF}`;
+    script += `:: 请以管理员身份运行以获得最佳效果${CRLF}${CRLF}`;
+    
+    script += `title WinClean Generator Output${CRLF}`;
+    script += `color 0A${CRLF}`;
+    script += `cls${CRLF}`; // Clear any garbage output from chcp or initial read
+    
+    script += `echo ==================================================${CRLF}`;
+    script += `echo           开始系统清理流程${CRLF}`;
+    script += `echo ==================================================${CRLF}${CRLF}`;
 
-    script += `echo 正在检查管理员权限...\n`;
-    script += `net session >nul 2>&1\n`;
-    script += `if %errorLevel% == 0 (\n    echo 成功: 确认拥有管理员权限。\n) else (\n    echo 失败: 当前权限不足。\n    echo 请右键点击脚本并选择 "以管理员身份运行"。\n    pause\n    exit\n)\n\n`;
+    script += `echo 正在检查管理员权限...${CRLF}`;
+    script += `net session >nul 2>&1${CRLF}`;
+    script += `if %errorLevel% == 0 (${CRLF}    echo 成功: 确认拥有管理员权限。${CRLF}) else (${CRLF}    echo 失败: 当前权限不足。${CRLF}    echo 请右键点击脚本并选择 "以管理员身份运行"。${CRLF}    pause${CRLF}    exit${CRLF})${CRLF}${CRLF}`;
 
     CLEANER_OPTIONS.forEach(option => {
       if (config[option.id]) {
-        script += `:: ${option.label}\n`;
-        script += `echo 正在清理: ${option.label}...\n`;
-        script += `${option.command}\n`;
-        script += `echo 完成。\n\n`;
+        script += `:: ${option.label}${CRLF}`;
+        script += `echo 正在清理: ${option.label}...${CRLF}`;
+        script += `${option.command}${CRLF}`;
+        script += `echo 完成。${CRLF}${CRLF}`;
       }
     });
 
-    script += `echo ==================================================\n`;
-    script += `echo             清理任务执行完毕\n`;
-    script += `echo ==================================================\n`;
-    script += `pause\n`;
+    script += `echo ==================================================${CRLF}`;
+    script += `echo             清理任务执行完毕${CRLF}`;
+    script += `echo ==================================================${CRLF}`;
+    script += `pause${CRLF}`;
 
     return script;
   }, [config]);
